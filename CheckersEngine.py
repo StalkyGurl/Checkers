@@ -15,3 +15,20 @@ class GameState():
             ['-', 'w', '-', 'w', '-', 'w', '-', 'w'],
             ['w', '-', 'w', '-', 'w', '-', 'w', '-']
         ]
+        self.whitesTurn = True
+        self.moveLog = []
+
+    def makeMove(self, move):
+        self.board[move.startRow][move.startCol] = '-'
+        self.board[move.endRow][move.endCol] = move.pawnMoved
+        self.moveLog.append(move)
+        self.whitesTurn = not self.whitesTurn
+
+
+class Move():
+    def __init__(self, startSquare, endSquare, board):
+        self.startRow = startSquare[0]
+        self.startCol = startSquare[1]
+        self.endRow = endSquare[0]
+        self.endCol = endSquare[1]
+        self.pawnMoved = board[self.startRow][self.startCol]
