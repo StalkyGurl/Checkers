@@ -7,12 +7,7 @@ from CheckersEngine import *
 from board import *
 from pawns import *
 
-
-WIDTH = HEIGHT = 600
-DIMENSION = 8
-SQ_SIZE = HEIGHT // DIMENSION
 FPS = 30
-
 
 '''
 The main driver of the code for user input and updating the graphics.
@@ -36,6 +31,7 @@ def main():
                 location = p.mouse.get_pos()
                 col = location[0]//SQ_SIZE
                 row = location[1]//SQ_SIZE
+                print(row,col)
                 if sq_selected == (row, col):
                     sq_selected = () # deselect
                     playerClicks = [] # clear the player clicks
@@ -43,11 +39,15 @@ def main():
                     sq_selected = (row, col)
                     playerClicks.append(sq_selected)
                 if len(playerClicks) == 2:
+                    game_state.getValidMoves()
+                    ValidMoves = game_state.moves
                     move = Move(playerClicks[0], playerClicks[1], game_state.board)
-                    game_state.makeMove(move)
+                    if move in ValidMoves:
+                        game_state.makeMove(move)
+                        game_state.moves = [] # reset moves after making a move
                     sq_selected = () # reset selected square
                     playerClicks = [] # reset player clicks
-                    
+
         drawGameState(screen,game_state)
         clock.tick(FPS)
         p.display.flip()

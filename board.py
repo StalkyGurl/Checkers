@@ -1,13 +1,16 @@
 '''
 This file is responsible for drawing the board depending on the current game state.
 '''
-from CheckersMain import DIMENSION, SQ_SIZE
+
 from pawns import *
 import pygame as p
 
 
 BG_COLOR = 'lemonchiffon1'
 SQ_COLOR = 'ivory4'
+WIDTH = HEIGHT = 600
+DIMENSION = 8
+SQ_SIZE = HEIGHT // DIMENSION
 
 '''
 Draw the squares on the board.
