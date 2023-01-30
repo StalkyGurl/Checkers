@@ -11,10 +11,10 @@ white_crown = p.image.load("images/black_crown.png")
 
 
 class Pawn:
-    def __init__(self, color, second_color):
+    def __init__(self, color, second_color, isQueen=False):
         self.color = color
         self.second_color = second_color
-        self.isQueen = False
+        self.isQueen = isQueen
 
     def drawPawn(self,win,x,y):
         p.draw.circle(win, self.color, (x, y), SIZE//2, 0)
@@ -23,9 +23,11 @@ class Pawn:
             win.blit(white_crown if self.color == 'white' else black_crown, (x, y))
 
 
-white_pawn = Pawn('white','gray90')
-black_pawn = Pawn('black','gray15')
+white_pawn = Pawn('white', 'gray90')
+black_pawn = Pawn('black', 'gray15')
+white_queen = Pawn('white', 'gray90', isQueen=True)
+black_queen = Pawn('black', 'gray15', isQueen=True)
 
-pawn_dict = {'b':black_pawn, 'w':white_pawn}
+pawn_dict = {'b':black_pawn, 'w':white_pawn, 'B':black_queen, 'W':white_queen}
 
 

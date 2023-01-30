@@ -1,6 +1,6 @@
 '''
 This file is responsible for storing all the information about the current state of the game.
-It is also responsible for checking and returning all the valid moves.
+It is also responsible for checking and returning all the valid moves. It also contains move log.
 '''
 
 from board import DIMENSION
@@ -17,66 +17,142 @@ class GameState():
             ['-', 'w', '-', 'w', '-', 'w', '-', 'w'],
             ['w', '-', 'w', '-', 'w', '-', 'w', '-']
         ]
-        self.whitesTurn = True
-        self.capturePossible = False #CapturePossible()
-        self.moves = []
+        self.whitesTurn = True 
+        self.moves = [] # all non-capture valid moves
         self.moveLog = []
+        self.firstCaptureMoves = [] # all capture valid moves
+        self.nextCaptureMoves = [] # the list of next captures for a moved pawn
 
 
+    '''
+    Function responsible for making a move.
+    '''
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = '-'
-        self.board[move.endRow][move.endCol] = move.pawnMoved
+        if move.endCol == 0 and move.pawnMoved == 'w':
+            self.board[move.endRow][move.endCol] = 'W'
+            move.isUpdateMove = True
+        elif move.endCol == 7 and move.pawnMoved == 'b':
+            self.board[move.endRow][move.endCol] = 'B'
+            move.isUpdateMove = True
+        else:
+            self.board[move.endRow][move.endCol] = move.pawnMoved
+        if move.isCaptureMove:
+            self.board[move.capturedSquare[0]][move.capturedSquare[1]] = '-'
         self.moveLog.append(move)
-        self.whitesTurn = not self.whitesTurn
 
 
-    def CapturePossible(self, startRow, startCol):
-        if self.whitesTurn:
-            pass
-        else:
-            pass
+    '''
+    This function is checking if there is any capture move possible.
+    '''
+    def CapturePossible(self):
+        DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                if self.board[r][c] != '-':
+                    if (self.board[r][c] == 'w' and self.whitesTurn) or (self.board[r][c] == 'b' and not self.whitesTurn):
+                        for d in DIRECTIONS:
+                            if 0 <= r + d[0] < DIMENSION and 0 <= r + d[0] + d[0] < DIMENSION and 0 <= c + d[1] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION:
+                                if ((self.board[r + d[0]][c + d[1]] == 'b' or self.board[r + d[0]][c + d[1]] == 'B') and self.whitesTurn) or ((self.board[r + d[0]][c + d[1]] == 'w' or self.board[r + d[0]][c + d[1]] == 'W') and not self.whitesTurn):
+                                    if self.board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
+                                        return True
+                    elif (self.board[r][c] == 'W' and self.whitesTurn) or (self.board[r][c] == 'B' and not self.whitesTurn):
+                        for d in DIRECTIONS:
+                            for i in range(1, DIMENSION):
+                                enemy_row = r + d[0] * i
+                                enemy_col = c + d[1] * i
+                                empty_row = r + d[0] * i + d[0]
+                                empty_col = c + d[1] * i + d[1]
+                                if empty_row >= 0 and empty_row < DIMENSION and empty_col >= 0 and empty_col < DIMENSION:
+                                    if self.board[enemy_row][enemy_col] == 'b' or self.board[enemy_row][enemy_col] == 'B' if self.whitesTurn else self.board[enemy_row][enemy_col] == 'w' or self.board[enemy_row][enemy_col] == 'W':
+                                        if self.board[empty_row][empty_col] == '-':
+                                            return True
+        return False
 
-
+    '''
+    This functions searches for all the valid moves (if there is no capture possible) for the current game state.
+    '''
     def getValidMoves(self):
-        if not self.capturePossible:
-            for r in range(len(self.board[0])):
-                for c in range(len(self.board[r])):
-                    if self.board[r][c] != '-':
-                        if self.board[r][c] == 'w' and self.whitesTurn:
-                            if r - 1 >= 0 and r - 1 < DIMENSION and c + 1 >= 0 and c + 1 < DIMENSION:
-                                newRow = r - 1
-                                newCol = c + 1
-                                if self.board[newRow][newCol] == '-':
-                                    self.moves.append(Move((r, c),(newRow, newCol), self.board))
-                            if r - 1 >= 0 and r - 1 < DIMENSION and c - 1 >= 0 and c - 1 < DIMENSION:
-                                newRow = r - 1
-                                newCol = c - 1
-                                if self.board[newRow][newCol] == '-':                                
-                                    self.moves.append(Move((r, c),(newRow, newCol), self.board))
-                        elif self.board[r][c] == 'b' and not self.whitesTurn:
-                            if r + 1 >= 0 and r + 1 < DIMENSION and c + 1 >= 0 and c + 1 < DIMENSION:
-                                newRow = r + 1
-                                newCol = c + 1
-                                if self.board[newRow][newCol] == '-': 
-                                    self.moves.append(Move((r, c),(newRow, newCol), self.board))
-                            if r + 1 >= 0 and r + 1 < DIMENSION and c - 1 >= 0 and c - 1 < DIMENSION:
-                                newRow = r + 1
-                                newCol = c - 1
-                                if self.board[newRow][newCol] == '-': 
-                                    self.moves.append(Move((r, c),(newRow, newCol), self.board))
-        else:
-            while self.capturePossible:
-                pass
+        for r in range(len(self.board[0])):
+            for c in range(len(self.board[r])):
+                if self.board[r][c] != '-':
+                    if self.board[r][c] == 'w' and self.whitesTurn:
+                        if r - 1 >= 0 and r - 1 < DIMENSION and c + 1 >= 0 and c + 1 < DIMENSION:
+                            newRow = r - 1
+                            newCol = c + 1
+                            if self.board[newRow][newCol] == '-':
+                                self.moves.append(Move((r, c),(newRow, newCol), self.board))
+                        if r - 1 >= 0 and r - 1 < DIMENSION and c - 1 >= 0 and c - 1 < DIMENSION:
+                            newRow = r - 1
+                            newCol = c - 1
+                            if self.board[newRow][newCol] == '-':                                
+                                self.moves.append(Move((r, c),(newRow, newCol), self.board))
+                    elif self.board[r][c] == 'b' and not self.whitesTurn:
+                        if r + 1 >= 0 and r + 1 < DIMENSION and c + 1 >= 0 and c + 1 < DIMENSION:
+                            newRow = r + 1
+                            newCol = c + 1
+                            if self.board[newRow][newCol] == '-': 
+                                self.moves.append(Move((r, c),(newRow, newCol), self.board))
+                        if r + 1 >= 0 and r + 1 < DIMENSION and c - 1 >= 0 and c - 1 < DIMENSION:
+                            newRow = r + 1
+                            newCol = c - 1
+                            if self.board[newRow][newCol] == '-': 
+                                self.moves.append(Move((r, c),(newRow, newCol), self.board))
+                    if (self.board[r][c] == 'W' and self.whitesTurn) or (self.board[r][c] == 'B' and not self.whitesTurn):
+                        DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
+                        for d in DIRECTIONS:
+                            for i in range(1, DIMENSION):
+                                new_row = r + d[0] * i
+                                new_col = c + d[1] * i
+                                if new_row >= 0 and new_row < DIMENSION and new_col >= 0 and new_col < DIMENSION:
+                                    if self.board[new_row][new_col] == '-':
+                                        self.moves.append(Move((r, c),(new_row, new_col), self.board))
+                                    else:
+                                        break
+
+    '''
+    This functions searches for all first valid capture moves.
+    '''
+    def getFirstCaptureMoves(self):
+        DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                if self.board[r][c] != '-':
+                    if (self.board[r][c] == 'w' and self.whitesTurn) or (self.board[r][c] == 'b' and not self.whitesTurn):
+                        for d in DIRECTIONS:
+                            if 0 < r + d[0] <= DIMENSION and 0 < r + d[0] + d[0] <= DIMENSION and 0 < c + d[1] <= DIMENSION and 0 < c + d[1] + d[1] <= DIMENSION:
+                                if ((self.board[r + d[0]][c + d[1]] == 'b' or self.board[r + d[0]][c + d[1]] == 'B') and self.whitesTurn) or ((self.board[r + d[0]][c + d[1]] == 'w' or self.board[r + d[0]][c + d[1]] == 'W') and not self.whitesTurn):
+                                    if self.board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
+                                        captured = (r + d[0], c + d[1])
+                                        self.firstCaptureMoves.append(Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), self.board, capturedSquare=captured))
+                    elif (self.board[r][c] == 'W' and self.whitesTurn) or (self.board[r][c] == 'B' and not self.whitesTurn):
+                        for d in DIRECTIONS:
+                            for i in range(1, DIMENSION):
+                                enemy_row = r + d[0] * i
+                                enemy_col = c + d[1] * i
+                                empty_row = r + d[0] * i + d[0]
+                                empty_col = c + d[1] * i + d[1]
+                                if empty_row >= 0 and empty_row < DIMENSION and empty_col >= 0 and empty_col < DIMENSION:
+                                    if ((self.board[enemy_row][enemy_col] == 'b' or self.board[enemy_row][enemy_col] == 'B') and self.whitesTurn) or ((self.board[enemy_row][enemy_col] == 'w' or self.board[enemy_row][enemy_col] == 'W') and not self.whitesTurn):
+                                        if self.board[empty_row][empty_col] == '-':
+                                            captured = (enemy_row, enemy_col)
+                                            self.firstCaptureMoves.append(Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), self.board, capturedSquare=captured))       
 
 
+'''
+This is a move class that contains info about the move - start and end location, ID, info about captures etc.
+'''
 class Move():
-    def __init__(self, startSquare, endSquare, board):
+    def __init__(self, startSquare, endSquare, board, capturedSquare=()):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
         self.endRow = endSquare[0]
         self.endCol = endSquare[1]
         self.pawnMoved = board[self.startRow][self.startCol]
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
+        self.isCaptureMove = False
+        self.capturedSquare = capturedSquare
+        self.isUpdateMove = False # when a pawn gets to the end of the board and becomes a queen
 
 
     def __eq__(self, other):
@@ -84,35 +160,52 @@ class Move():
             return self.moveID == other.moveID
         return False
 
-    
-    def getValidMoves(self, board):
-        if not board.capturePossible:
-            for r in board[0]:
-                for c in board[r]:
-                    if board[r][c] != '-':
-                        if board[r][c] == 'w' and board.whitesTurn:
-                            if r - 1 >= 0 and c + 1 < DIMENSION:
-                                newRow = r - 1
-                                newCol = c + 1
-                                if board[newRow][newCol] == '-':
-                                    board.moves.append[Move((r, c),(newRow, newCol), board)]
-                            if r - 1 >= 0 and c - 1 < DIMENSION:
-                                newRow = r - 1
-                                newCol = c + 1
-                                if board[newRow][newCol] == '-':                                
-                                    board.moves.append[Move((r, c),(newRow, newCol), board)]
-                        elif board[r][c] == 'b' and not board.whitesTurn:
-                            if r + 1 >= 0 and c + 1 < DIMENSION:
-                                newRow = r + 1
-                                newCol = c + 1
-                                if board[newRow][newCol] == '-': 
-                                    board.moves.append[Move((r, c),(newRow, newCol), board)]
-                            if r + 1 >= 0 and c - 1 < DIMENSION:
-                                newRow = r + 1
-                                newCol = c + 1
-                                if board[newRow][newCol] == '-': 
-                                    board.moves.append[Move((r, c),(newRow, newCol), board)]
-        else:
-            while board.capturePossible:
-                pass
 
+'''
+This function checks if there are more captures possible for a pawn.
+'''
+def moreCapturesAvalible(board, r, c, gm):
+    DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
+    if (board[r][c] == 'w' and gm.whitesTurn) or (board[r][c] == 'b' and not gm.whitesTurn):
+        for d in DIRECTIONS:
+            if 0 < r + d[0] <= DIMENSION and 0 < r + d[0] + d[0] <= DIMENSION and 0 < c + d[1] <= DIMENSION and 0 < c + d[1] + d[1] <= DIMENSION:
+                if board[r + d[0]][c + d[1]] == 'b' or board[r + d[0]][c + d[1]] == 'B' if gm.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
+                    if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
+                        return True
+    elif (board[r][c] == 'W' and gm.whitesTurn) or (board[r][c] == 'B' and not gm.whitesTurn):
+        for d in DIRECTIONS:
+            for i in range(1, DIMENSION):
+                enemy_row = r + d[0] * i
+                enemy_col = c + d[1] * i
+                empty_row = r + d[0] * i + d[0]
+                empty_col = c + d[1] * i + d[1]
+                if empty_row >= 0 and empty_row < DIMENSION and empty_col >= 0 and empty_col < DIMENSION:
+                    if board[enemy_row][enemy_col] == 'b' or board[enemy_row][enemy_col] == 'B' if gm.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
+                        if board[empty_row][empty_col] == '-':
+                            return True
+    return False
+
+'''
+This functions searches for all the next valid capture moves.
+'''
+def getMoreCaptures(board, r, c, gm):
+    DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
+    if (board[r][c] == 'w' and gm.whitesTurn) or (board[r][c] == 'b' and not gm.whitesTurn):
+        for d in DIRECTIONS:
+            if 0 < r + d[0] <= DIMENSION and 0 < r + d[0] + d[0] <= DIMENSION and 0 < c + d[1] <= DIMENSION and 0 < c + d[1] + d[1] <= DIMENSION:
+                if board[r + d[0]][c + d[1]] == 'b' or board[r + d[0]][c + d[1]] == 'B' if gm.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
+                    if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
+                        captured = (r + d[0], c + d[1])
+                        gm.nextCaptureMoves.append(Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), board, capturedSquare=captured))
+    elif (board[r][c] == 'W' and gm.whitesTurn) or (board[r][c] == 'B' and not gm.whitesTurn):
+        for d in DIRECTIONS:
+            for i in range(1, DIMENSION):
+                enemy_row = r + d[0] * i
+                enemy_col = c + d[1] * i
+                empty_row = r + d[0] * i + d[0]
+                empty_col = c + d[1] * i + d[1]
+                if empty_row >= 0 and empty_row < DIMENSION and empty_col >= 0 and empty_col < DIMENSION:
+                    if board[enemy_row][enemy_col] == 'b' or board[enemy_row][enemy_col] == 'B' if gm.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
+                        if board[empty_row][empty_col] == '-':
+                            captured = (enemy_row, enemy_col)
+                            gm.nextCaptureMoves.append(Move((r, c),(empty_row, empty_col), board, capturedSquare=captured))
