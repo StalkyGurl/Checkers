@@ -29,10 +29,10 @@ class GameState():
     '''
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = '-'
-        if move.endCol == 0 and move.pawnMoved == 'w':
+        if move.endRow == 0 and move.pawnMoved == 'w':
             self.board[move.endRow][move.endCol] = 'W'
             move.isUpdateMove = True
-        elif move.endCol == 7 and move.pawnMoved == 'b':
+        elif move.endRow == 7 and move.pawnMoved == 'b':
             self.board[move.endRow][move.endCol] = 'B'
             move.isUpdateMove = True
         else:
@@ -120,7 +120,7 @@ class GameState():
                 if self.board[r][c] != '-':
                     if (self.board[r][c] == 'w' and self.whitesTurn) or (self.board[r][c] == 'b' and not self.whitesTurn):
                         for d in DIRECTIONS:
-                            if 0 < r + d[0] <= DIMENSION and 0 < r + d[0] + d[0] <= DIMENSION and 0 < c + d[1] <= DIMENSION and 0 < c + d[1] + d[1] <= DIMENSION:
+                            if 0 <= r + d[0] + d[0] < DIMENSION and 0 <= r + d[0] + d[0] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION:
                                 if ((self.board[r + d[0]][c + d[1]] == 'b' or self.board[r + d[0]][c + d[1]] == 'B') and self.whitesTurn) or ((self.board[r + d[0]][c + d[1]] == 'w' or self.board[r + d[0]][c + d[1]] == 'W') and not self.whitesTurn):
                                     if self.board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
                                         captured = (r + d[0], c + d[1])
@@ -168,7 +168,7 @@ def moreCapturesAvalible(board, r, c, gm):
     DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
     if (board[r][c] == 'w' and gm.whitesTurn) or (board[r][c] == 'b' and not gm.whitesTurn):
         for d in DIRECTIONS:
-            if 0 < r + d[0] <= DIMENSION and 0 < r + d[0] + d[0] <= DIMENSION and 0 < c + d[1] <= DIMENSION and 0 < c + d[1] + d[1] <= DIMENSION:
+            if 0 <= r + d[0] + d[0] < DIMENSION and 0 <= r + d[0] + d[0] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION:
                 if board[r + d[0]][c + d[1]] == 'b' or board[r + d[0]][c + d[1]] == 'B' if gm.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
                     if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
                         return True
@@ -192,7 +192,7 @@ def getMoreCaptures(board, r, c, gm):
     DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
     if (board[r][c] == 'w' and gm.whitesTurn) or (board[r][c] == 'b' and not gm.whitesTurn):
         for d in DIRECTIONS:
-            if 0 < r + d[0] <= DIMENSION and 0 < r + d[0] + d[0] <= DIMENSION and 0 < c + d[1] <= DIMENSION and 0 < c + d[1] + d[1] <= DIMENSION:
+            if 0 <= r + d[0] +d[0] < DIMENSION and 0 <= r + d[0] + d[0] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION:
                 if board[r + d[0]][c + d[1]] == 'b' or board[r + d[0]][c + d[1]] == 'B' if gm.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
                     if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
                         captured = (r + d[0], c + d[1])

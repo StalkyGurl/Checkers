@@ -7,7 +7,7 @@ import pygame as p
 SIZE = 55
 
 black_crown = p.image.load("images/black_crown.png")
-white_crown = p.image.load("images/black_crown.png")
+white_crown = p.image.load("images/white_crown.png")
 
 
 class Pawn:
@@ -20,7 +20,7 @@ class Pawn:
         p.draw.circle(win, self.color, (x, y), SIZE//2, 0)
         p.draw.circle(win,self.second_color, (x,y), SIZE//3, 0)
         if self.isQueen:
-            win.blit(white_crown if self.color == 'white' else black_crown, (x, y))
+            win.blit(white_crown if self.color == 'black' else black_crown, (x - SIZE//2.75, y - SIZE//2.75))
 
 
 white_pawn = Pawn('white', 'gray90')
