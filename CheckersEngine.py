@@ -49,6 +49,8 @@ class GameState():
     '''
     def undoMove(self):
         if len(self.moveLog) != 0:
+            self.whiteWon = False
+            self.blackWon = False
             move = self.moveLog.pop()
             if move.movedQueen:
                 self.board[move.startRow][move.startCol] = 'B' if self.whitesTurn else 'W'
