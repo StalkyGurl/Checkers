@@ -1,5 +1,5 @@
 '''
-This file is responsible for drawing the board depending on the current game state.
+This file is responsible for drawing the board depending on the current game state, including text and animations.
 '''
 
 from pawns import *
@@ -31,7 +31,7 @@ def drawPawns(screen, board):
         for c in range(DIMENSION):
             pawn = board[r][c]
             if pawn != '-':
-                pawn_dict[board[r][c]].drawPawn(screen, c*SQ_SIZE+SQ_SIZE//2, r*SQ_SIZE+SQ_SIZE//2)
+                pawn_dict[pawn].drawPawn(screen, c*SQ_SIZE+SQ_SIZE//2, r*SQ_SIZE+SQ_SIZE//2)
 
 
 '''
@@ -88,3 +88,34 @@ def drawGameState(screen, game_state, validMoves, sqSelected):
         drawEndGameText(screen, 'White wins!')
     elif game_state.blackWon:
         drawEndGameText(screen, 'Black wins!')
+
+
+'''
+This function does the moving animations.
+'''
+def animateMove(move, screen, gs, clock):
+    colors = [BG_COLOR, SQ_COLOR]
+    dr = move.endRow - move.startRow
+    dc = move.endCol - move.startCol
+    framesPerSquare = 8 # frames to move one square
+    frameCount = (abs(dr) + abs(dc)) * framesPerSquare
+    for frame in range(frameCount + 1):
+        r, c = (move.startRow + dr * frame / frameCount, move.startCol + dc * frame / frameCount)
+        drawBoard(screen)
+        drawPawns(screen, gs.board)
+        # erase the pawn from it's ending square
+        color = colors[(move.endRow + move.endCol) % 2]
+        endSquare = p.Rect(move.endCol * SQ_SIZE, move.endRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+        p.draw.rect(screen, color, endSquare)
+        # draw moving pawn
+        if gs.whitesTurn and move.movedQueen:
+            pawn = 'W'
+        elif gs.whitesTurn and not move.movedQueen:
+            pawn = 'w'
+        elif not gs.whitesTurn and move.movedQueen:
+            pawn = 'B'
+        else:
+            pawn = 'b'
+        pawn_dict[pawn].drawPawn(screen, c*SQ_SIZE+SQ_SIZE//2, r*SQ_SIZE+SQ_SIZE//2)
+        p.display.flip()
+        clock.tick(60)

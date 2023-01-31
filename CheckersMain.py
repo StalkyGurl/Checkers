@@ -3,21 +3,26 @@ This is the main driver file.
 '''
 
 import pygame as p
+import os
 from CheckersEngine import *
 from board import *
 from pawns import *
 
 FPS = 60
 
+
 '''
 The main driver of the code for user input and updating the graphics.
 '''
 def main():
     p.init()
+    p.mixer.init()
     p.display.set_caption('Checkers')
     screen = p.display.set_mode((WIDTH,HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color(BG_COLOR))
+    pawnSound = p.mixer.Sound(os.path.join('sounds', 'pawn.ogg'))
+    captureSound = p.mixer.Sound(os.path.join('sounds', 'pick.ogg'))
     game_state = GameState()
     running = True
     sq_selected = () # keep track of the last click of the user (tuple)
@@ -27,6 +32,9 @@ def main():
     game_state.getValidMoves() # generate all valid moves
     ValidMoves = game_state.moves
     firstCapture = True
+    animate = False
+    whitePlayer = True # player plays as white
+    blackPlayer = True # player plays as black
 
     while running:      
         if game_state.CapturePossible() and firstCapture:
@@ -45,7 +53,7 @@ def main():
             if e.type == p.QUIT:
                 running = False
             # mouse clicks    
-            elif e.type == p.MOUSEBUTTONDOWN and not game_state.whiteWon and not game_state.blackWon:
+            elif e.type == p.MOUSEBUTTONDOWN and not game_state.whiteWon and not game_state.blackWon and not animate:
                 location = p.mouse.get_pos()
                 col = location[0]//SQ_SIZE
                 row = location[1]//SQ_SIZE
@@ -63,6 +71,10 @@ def main():
                         for valid_move in ValidMoves:
                             if valid_move == move:
                                 game_state.makeMove(valid_move)
+                                animate = True
+                                animateMove(valid_move, screen, game_state, clock)
+                                pawnSound.play()
+                                animate = False
                                 game_state.moves = [] # reset moves after making a move
                                 game_state.whitesTurn = not game_state.whitesTurn
                                 sq_selected = () # reset selected square
@@ -84,6 +96,11 @@ def main():
                                 if valid_move == move: # if the first capture was made
                                     firstCapture = False
                                     game_state.makeMove(valid_move)
+                                    animate = True
+                                    captureSound.play()
+                                    animateMove(valid_move, screen, game_state, clock)
+                                    pawnSound.play()
+                                    animate = False
                                     game_state.firstCaptureMoves = [] # reset moves after making a move
                                     sq_selected = () # deselect
                                     playerClicks = [] # clear the player clicks
@@ -106,6 +123,11 @@ def main():
                                                 for valid_move in ValidMoves:
                                                     if valid_move == move: # if next capture was made
                                                         game_state.makeMove(valid_move)
+                                                        animate = True
+                                                        captureSound.play()
+                                                        animateMove(valid_move, screen, game_state, clock)
+                                                        pawnSound.play()
+                                                        animate = False
                                                         make_more_moves = moreCapturesAvalible(game_state.board, move.endRow, move.endCol, game_state)
                                                         game_state.nextCaptureMoves = [] # reset moves after making a move
                                                         sq_selected = () # deselect
