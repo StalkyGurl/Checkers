@@ -22,6 +22,8 @@ class GameState():
         self.moveLog = []
         self.firstCaptureMoves = [] # all capture valid moves
         self.nextCaptureMoves = [] # the list of next captures for a moved pawn
+        self.whiteWon = False
+        self.blackWon = False
 
 
     '''
@@ -62,7 +64,28 @@ class GameState():
                     self.whitesTurn = not self.whitesTurn
             else:
                 self.whitesTurn = not self.whitesTurn
-            
+
+    '''
+    Function for reseting game state.
+    '''
+    def restartGame(self):
+        self.board = [
+            ['-', 'b', '-', 'b', '-', 'b', '-', 'b'],
+            ['b', '-', 'b', '-', 'b', '-', 'b', '-'],
+            ['-', 'b', '-', 'b', '-', 'b', '-', 'b'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-', '-'],
+            ['w', '-', 'w', '-', 'w', '-', 'w', '-'],
+            ['-', 'w', '-', 'w', '-', 'w', '-', 'w'],
+            ['w', '-', 'w', '-', 'w', '-', 'w', '-']
+        ] # reset the board
+        self.whitesTurn = True # it's whites turn
+        self.moves = [] # clear moves
+        self.moveLog = [] # clear moveLog
+        self.firstCaptureMoves = [] 
+        self.nextCaptureMoves = []
+        self.whiteWon = False
+        self.blackWon = False
 
 
     '''
@@ -90,7 +113,7 @@ class GameState():
                             for i in range(1, DIMENSION):
                                 enemy_row = r + d[0] * i
                                 enemy_col = c + d[1] * i
-                                empty_row = enemy_row * i + d[0]
+                                empty_row = enemy_row + d[0]
                                 empty_col = enemy_col + d[1]
                                 if empty_row >= 0 and empty_row < DIMENSION and empty_col >= 0 and empty_col < DIMENSION:
                                     if self.board[enemy_row][enemy_col] != '-' and self.board[empty_row][empty_col] != '-':
@@ -198,7 +221,7 @@ class GameState():
 
                                         if self.board[empty_row][empty_col] == '-':
                                             captured = (enemy_row, enemy_col)
-                                            move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), self.board, isCaptureMove = True,
+                                            move = Move((r, c),(empty_row, empty_col), self.board, isCaptureMove = True,
                                                     capturedSquare=captured, movedQueen=True, capturedQueen=(self.board[captured[0]][captured[1]]== 'W' or \
                                                                                                               self.board[captured[0]][captured[1]]=='B'))
                                             if move not in self.firstCaptureMoves:

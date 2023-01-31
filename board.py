@@ -42,6 +42,7 @@ def updateBoard(screen, game_state, FPS, clock, validMoves, sqSelected):
     clock.tick(FPS)
     p.display.flip()
 
+
 '''
 Highlight selected squares and all valid moves for this pawn
 '''
@@ -64,6 +65,17 @@ def highlightSquares(screen, game_state, validMoves, sqSelected):
                     screen.blit(s, (move.endCol*SQ_SIZE, move.endRow*SQ_SIZE))
 
 
+'''
+Function repsonsible for drawing end game text.
+'''
+def drawEndGameText(screen, text):
+    font = p.font.SysFont('Verdana', 48, True, False)
+    textObject = font.render(text, 0, p.Color('Black'))
+    textShadowObject = font.render(text, 0, p.Color('Gray'))
+    textLocation = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH/2 - textObject.get_width()/2, HEIGHT/2 - textObject.get_height()/2)
+    screen.blit(textShadowObject, textLocation.move(2,2))
+    screen.blit(textObject, textLocation)
+
 
 '''
 Responsible for all the graphics within the current game state.
@@ -72,4 +84,7 @@ def drawGameState(screen, game_state, validMoves, sqSelected):
     drawBoard(screen) # draw squares on the board
     highlightSquares(screen, game_state, validMoves, sqSelected)
     drawPawns(screen, game_state.board) # draw pawns
-
+    if game_state.whiteWon:
+        drawEndGameText(screen, 'White wins!')
+    elif game_state.blackWon:
+        drawEndGameText(screen, 'Black wins!')

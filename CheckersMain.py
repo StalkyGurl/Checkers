@@ -28,16 +28,24 @@ def main():
     ValidMoves = game_state.moves
     firstCapture = True
 
-    while running:
+    while running:      
         if game_state.CapturePossible() and firstCapture:
             game_state.getFirstCaptureMoves() # generate all valid capture moves
             ValidMoves = game_state.firstCaptureMoves
+
+        elif not game_state.CapturePossible():
+            game_state.getValidMoves() # generate all valid moves
+            ValidMoves = game_state.moves
+
+        if len(ValidMoves) == 0: # if there are no moves, end the game
+            if game_state.whitesTurn: game_state.blackWon = True
+            else: game_state.whiteWon = True
 
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             # mouse clicks    
-            elif e.type == p.MOUSEBUTTONDOWN:
+            elif e.type == p.MOUSEBUTTONDOWN and not game_state.whiteWon and not game_state.blackWon:
                 location = p.mouse.get_pos()
                 col = location[0]//SQ_SIZE
                 row = location[1]//SQ_SIZE
@@ -50,8 +58,6 @@ def main():
 
                 # if there is no capture move possible
                 if not game_state.CapturePossible():
-                    game_state.getValidMoves() # generate all valid moves
-                    ValidMoves = game_state.moves
                     if len(playerClicks) == 2:
                         move = Move(playerClicks[0], playerClicks[1], game_state.board)
                         for valid_move in ValidMoves:
@@ -113,6 +119,10 @@ def main():
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z: # undo button
                     game_state.undoMove()
+                    sq_selected = ()
+                    playerClicks = []
+                elif e.key == p.K_r: # undo button
+                    game_state.restartGame()
                     sq_selected = ()
                     playerClicks = []
 
