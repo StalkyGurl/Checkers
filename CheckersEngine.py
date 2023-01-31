@@ -41,6 +41,23 @@ class GameState():
             self.board[move.capturedSquare[0]][move.capturedSquare[1]] = '-'
         self.moveLog.append(move)
 
+    
+    '''
+    Function for undoing moves
+    '''
+    def undoMove(self):
+        if len(self.moveLog) != 0:
+            move = self.moveLog.pop()
+            self.board[move.startRow][move.startCol] = 'b' if self.whitesTurn else 'w'
+            self.board[move.endRow][move.endCol] = '-'
+            if move.isCaptureMove:
+                self.board[move.capturedSquare[0]][move.capturedSquare[1]] = 'w' if self.whitesTurn else 'b'
+                if move.lastCapture:
+                    self.whitesTurn = not self.whitesTurn
+            else:
+                self.whitesTurn = not self.whitesTurn
+            
+
 
     '''
     This function is checking if there is any capture move possible.
@@ -195,6 +212,7 @@ class Move():
         self.isCaptureMove = isCaptureMove
         self.capturedSquare = capturedSquare
         self.isUpdateMove = False # when a pawn gets to the end of the board and becomes a queen
+        self.lastCapture = False
 
 
     def __eq__(self, other):
