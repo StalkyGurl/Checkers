@@ -48,10 +48,16 @@ class GameState():
     def undoMove(self):
         if len(self.moveLog) != 0:
             move = self.moveLog.pop()
-            self.board[move.startRow][move.startCol] = 'b' if self.whitesTurn else 'w'
+            if move.movedQueen:
+                self.board[move.startRow][move.startCol] = 'B' if self.whitesTurn else 'W'
+            else:
+                self.board[move.startRow][move.startCol] = 'b' if self.whitesTurn else 'w'
             self.board[move.endRow][move.endCol] = '-'
             if move.isCaptureMove:
-                self.board[move.capturedSquare[0]][move.capturedSquare[1]] = 'w' if self.whitesTurn else 'b'
+                if move.capturedQueen:
+                    self.board[move.capturedSquare[0]][move.capturedSquare[1]] = 'W' if self.whitesTurn else 'B'
+                else:
+                    self.board[move.capturedSquare[0]][move.capturedSquare[1]] = 'w' if self.whitesTurn else 'b'
                 if move.lastCapture:
                     self.whitesTurn = not self.whitesTurn
             else:
@@ -143,7 +149,7 @@ class GameState():
                                 new_col = c + d[1] * i
                                 if new_row >= 0 and new_row < DIMENSION and new_col >= 0 and new_col < DIMENSION:
                                     if self.board[new_row][new_col] == '-':
-                                        move = Move((r, c),(new_row, new_col), self.board)
+                                        move = Move((r, c),(new_row, new_col), self.board, movedQueen=True)
                                         if move not in self.moves:
                                             self.moves.append(move)    
                                     else:
@@ -170,7 +176,8 @@ class GameState():
                                     if self.board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
                                         captured = (r + d[0], c + d[1])
                                         move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), self.board, isCaptureMove = True,
-                                                    capturedSquare=captured)
+                                                    capturedSquare=captured, capturedQueen=(self.board[captured[0]][captured[1]]== 'W' or \
+                                                         self.board[captured[0]][captured[1]]=='B'))
                                         if move not in self.firstCaptureMoves:
                                             self.firstCaptureMoves.append(move)
 
@@ -192,7 +199,8 @@ class GameState():
                                         if self.board[empty_row][empty_col] == '-':
                                             captured = (enemy_row, enemy_col)
                                             move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), self.board, isCaptureMove = True,
-                                                    capturedSquare=captured)
+                                                    capturedSquare=captured, movedQueen=True, capturedQueen=(self.board[captured[0]][captured[1]]== 'W' or \
+                                                                                                              self.board[captured[0]][captured[1]]=='B'))
                                             if move not in self.firstCaptureMoves:
                                                 self.firstCaptureMoves.append(move)
                                             break       
@@ -202,7 +210,7 @@ class GameState():
 This is a move class that contains info about the move - start and end location, ID, info about captures etc.
 '''
 class Move():
-    def __init__(self, startSquare, endSquare, board, capturedSquare=(), isCaptureMove=False):
+    def __init__(self, startSquare, endSquare, board, capturedSquare=(), isCaptureMove=False, movedQueen=False, capturedQueen=False):
         self.startRow = startSquare[0]
         self.startCol = startSquare[1]
         self.endRow = endSquare[0]
@@ -213,6 +221,8 @@ class Move():
         self.capturedSquare = capturedSquare
         self.isUpdateMove = False # when a pawn gets to the end of the board and becomes a queen
         self.lastCapture = False
+        self.movedQueen = movedQueen
+        self.capturedQueen = capturedQueen
 
 
     def __eq__(self, other):
@@ -271,7 +281,8 @@ def getMoreCaptures(board, r, c, gm):
                     
                     if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
                         captured = (r + d[0], c + d[1])
-                        move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), board, isCaptureMove = True, capturedSquare=captured)
+                        move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), board, isCaptureMove = True, capturedSquare=captured, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
+                                                                                                                                                     board[captured[0]][captured[1]]=='B'))
                         if move not in gm.nextCaptureMoves:
                             gm.nextCaptureMoves.append(move)
 
@@ -290,6 +301,7 @@ def getMoreCaptures(board, r, c, gm):
                         if gm.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
                         if board[empty_row][empty_col] == '-':
                             captured = (enemy_row, enemy_col)
-                            move = Move((r, c),(empty_row, empty_col), board, isCaptureMove = True, capturedSquare=captured)
+                            move = Move((r, c),(empty_row, empty_col), board, isCaptureMove = True, capturedSquare=captured, movedQueen=True, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
+                                                                                                                                                              board[captured[0]][captured[1]]=='B'))
                         if move not in gm.nextCaptureMoves:
                             gm.nextCaptureMoves.append(move)
