@@ -253,7 +253,7 @@ class Move():
     def __eq__(self, other):
         if isinstance(other, Move):
             return self.moveID == other.moveID
-        return False
+        return False    
 
 
 '''

@@ -34,13 +34,14 @@ def main():
     ValidMoves = game_state.moves
     firstCapture = True
     animate = False
-    whitePlayer = False # player plays as white
+    whitePlayer = True # player plays as white
     blackPlayer = False # player plays as black
     endgame = False
 
     while running: 
 
         humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+
         if game_state.CapturePossible() and firstCapture:
             game_state.getFirstCaptureMoves() # generate all valid capture moves
             ValidMoves = game_state.firstCaptureMoves
@@ -57,10 +58,10 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
-             # human's turn
-            elif humanTurn:
             # mouse clicks    
-                if e.type == p.MOUSEBUTTONDOWN and not game_state.whiteWon and not game_state.blackWon and not animate:
+            elif e.type == p.MOUSEBUTTONDOWN and not game_state.whiteWon and not game_state.blackWon and not animate:
+                # human's turn
+                if humanTurn:
                     location = p.mouse.get_pos()
                     col = location[0]//SQ_SIZE
                     row = location[1]//SQ_SIZE
@@ -142,16 +143,7 @@ def main():
                                                 else:
                                                     playerClicks = [sq_selected]
                                         break
-                # key clicks
-                elif e.type == p.KEYDOWN:
-                    if e.key == p.K_z: # undo button
-                        game_state.undoMove()
-                        sq_selected = ()
-                        playerClicks = []
-                    elif e.key == p.K_r: # undo button
-                        game_state.restartGame()
-                        sq_selected = ()
-                        playerClicks = []
+
             # AI's turn
             elif not humanTurn and not endgame and not animate:
                 if not game_state.CapturePossible():
@@ -161,8 +153,9 @@ def main():
                     animateMove(AImove, screen, game_state, clock)
                     pawnSound.play()
                     animate = False
-                    game_state.whitesTurn = not game_state.whitesTurn
                     game_state.moves = [] # reset moves after making a move
+                    game_state.whitesTurn = not game_state.whitesTurn
+                    humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
                 # if there is any capture move possible
                 elif game_state.CapturePossible():
                     AImove = AIrandomMove(game_state, capturePossible=True, firstCapture=True)
@@ -174,11 +167,13 @@ def main():
                     animate = False
                     game_state.firstCaptureMoves = [] # reset moves after making a move
                     make_more_moves = moreCapturesAvalible(game_state.board, AImove.endRow, AImove.endCol, game_state)
+                    humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
                     if not make_more_moves: # if there are no more captures for moved pawn
                         game_state.whitesTurn = not game_state.whitesTurn
                         game_state.nextCaptureMoves = [] # reset moves after making a move
                         game_state.moveLog[-1].lastCapture = True # set the flag of the last capture move
                         firstCapture = True
+                        humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
                     else: # if there are more captures
                         getMoreCaptures(game_state.board, AImove.endRow, AImove.endCol, game_state)
                         AImove = AIrandomMove(game_state, capturePossible=True, firstCapture=False)
@@ -189,9 +184,20 @@ def main():
                         pawnSound.play()
                         animate = False
                         make_more_moves = moreCapturesAvalible(game_state.board, AImove.endRow, AImove.endCol, game_state)
-                        game_state.nextCaptureMoves = [] 
+                        game_state.nextCaptureMoves = []
+                        humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer) 
 
-        humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)    
+            # key clicks
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z: # undo button
+                    game_state.undoMove()
+                    sq_selected = ()
+                    playerClicks = []
+                elif e.key == p.K_r: # undo button
+                    game_state.restartGame()
+                    sq_selected = ()
+                    playerClicks = []
+   
         updateBoard(screen, game_state, FPS, clock, ValidMoves, sq_selected)
 
 

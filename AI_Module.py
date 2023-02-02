@@ -27,7 +27,7 @@ def AIrandomMove(gs, capturePossible=False, firstCapture=False):
         ValidMoves = gs.firstCaptureMoves
         AImove = ValidMoves[randint(0, len(ValidMoves)-1)]
         return AImove
-    else:
+    elif capturePossible and not firstCapture:
         ValidMoves = gs.nextCaptureMoves
         AImove = ValidMoves[randint(0, len(ValidMoves)-1)]
         return AImove
