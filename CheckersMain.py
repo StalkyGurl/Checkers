@@ -34,7 +34,7 @@ def main():
     ValidMoves = game_state.moves
     firstCapture = True
     animate = False
-    whitePlayer = False # player plays as white
+    whitePlayer = True # player plays as white
     blackPlayer = False # player plays as black
     endgame = False
 
@@ -187,6 +187,13 @@ def main():
                         make_more_moves = moreCapturesAvalible(game_state.board, AImove.endRow, AImove.endCol, game_state)
                         game_state.nextCaptureMoves = []
                         humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer) 
+                        if not make_more_moves:
+                            game_state.whitesTurn = not game_state.whitesTurn
+                            game_state.nextCaptureMoves = [] # reset moves after making a move
+                            game_state.moveLog[-1].lastCapture = True # set the flag of the last capture move
+                            firstCapture = True
+                            humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+
 
             # key clicks
             elif e.type == p.KEYDOWN:
