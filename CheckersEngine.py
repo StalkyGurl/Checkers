@@ -121,6 +121,10 @@ class GameState():
                                     if self.board[enemy_row][enemy_col] != '-' and self.board[empty_row][empty_col] != '-':
                                         break
 
+                                    elif self.board[enemy_row][enemy_col] == 'w' or self.board[enemy_row][enemy_col] == 'W' \
+                                    if self.whitesTurn else self.board[enemy_row][enemy_col] == 'b' or self.board[enemy_row][enemy_col] == 'B':
+                                        break
+
                                     elif ((self.board[enemy_row][enemy_col] == 'b' or self.board[enemy_row][enemy_col] == 'B') and \
                                          self.whitesTurn) or ((self.board[enemy_row][enemy_col] == 'w' \
                                         or self.board[enemy_row][enemy_col] == 'W') and not self.whitesTurn):
@@ -217,6 +221,10 @@ class GameState():
                                     if self.board[enemy_row][enemy_col] != '-' and self.board[empty_row][empty_col] != '-':
                                         break
 
+                                    elif self.board[enemy_row][enemy_col] == 'w' or self.board[enemy_row][enemy_col] == 'W' \
+                                    if self.whitesTurn else self.board[enemy_row][enemy_col] == 'b' or self.board[enemy_row][enemy_col] == 'B':
+                                        break
+
                                     elif ((self.board[enemy_row][enemy_col] == 'b' or self.board[enemy_row][enemy_col] == 'B') and self.whitesTurn) \
                                         or ((self.board[enemy_row][enemy_col] == 'w' or self.board[enemy_row][enemy_col] == 'W') and \
                                         not self.whitesTurn):
@@ -259,20 +267,20 @@ class Move():
 '''
 This function checks if there are more captures possible for a pawn.
 '''
-def moreCapturesAvalible(board, r, c, gm):
+def moreCapturesAvalible(board, r, c, gs):
     DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
-    if (board[r][c] == 'w' and gm.whitesTurn) or (board[r][c] == 'b' and not gm.whitesTurn):
+    if (board[r][c] == 'w' and gs.whitesTurn) or (board[r][c] == 'b' and not gs.whitesTurn):
         for d in DIRECTIONS:
             if 0 <= r + d[0] + d[0] < DIMENSION and 0 <= r + d[0] + d[0] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION and \
                 0 <= c + d[1] + d[1] < DIMENSION:
 
                 if board[r + d[0]][c + d[1]] == 'b' or board[r + d[0]][c + d[1]] == 'B' \
-                    if gm.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
+                    if gs.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
                     
                         if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
                             return True
                     
-    elif (board[r][c] == 'W' and gm.whitesTurn) or (board[r][c] == 'B' and not gm.whitesTurn):
+    elif (board[r][c] == 'W' and gs.whitesTurn) or (board[r][c] == 'B' and not gs.whitesTurn):
         for d in DIRECTIONS:
             for i in range(1, DIMENSION):
                 enemy_row = r + d[0] * i
@@ -283,8 +291,12 @@ def moreCapturesAvalible(board, r, c, gm):
                     if board[enemy_row][enemy_col] != '-' and board[empty_row][empty_col] != '-':
                         break
 
+                    elif board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W' \
+                        if gs.whitesTurn else board[enemy_row][enemy_col] == 'b' or board[enemy_row][enemy_col] == 'B':
+                            break
+
                     elif board[enemy_row][enemy_col] == 'b' or board[enemy_row][enemy_col] == 'B' \
-                        if gm.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
+                        if gs.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
                         
                         if board[empty_row][empty_col] == '-':
                             return True
@@ -294,24 +306,24 @@ def moreCapturesAvalible(board, r, c, gm):
 '''
 This functions searches for all the next valid capture moves.
 '''
-def getMoreCaptures(board, r, c, gm):
+def getMoreCaptures(board, r, c, gs):
     DIRECTIONS = ((1,1),(-1,-1),(1,-1),(-1,1))
-    if (board[r][c] == 'w' and gm.whitesTurn) or (board[r][c] == 'b' and not gm.whitesTurn):
+    if (board[r][c] == 'w' and gs.whitesTurn) or (board[r][c] == 'b' and not gs.whitesTurn):
         for d in DIRECTIONS:
             if 0 <= r + d[0] +d[0] < DIMENSION and 0 <= r + d[0] + d[0] < DIMENSION and 0 <= c + d[1] + d[1] < DIMENSION \
                 and 0 <= c + d[1] + d[1] < DIMENSION:
 
                 if board[r + d[0]][c + d[1]] == 'b' or board[r + d[0]][c + d[1]] == 'B' \
-                    if gm.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
+                    if gs.whitesTurn else board[r + d[0]][c + d[1]] == 'w' or board[r + d[0]][c + d[1]] == 'W':
                     
-                    if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
-                        captured = (r + d[0], c + d[1])
-                        move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), board, isCaptureMove = True, capturedSquare=captured, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
-                                                                                                                                                     board[captured[0]][captured[1]]=='B'))
-                        if move not in gm.nextCaptureMoves:
-                            gm.nextCaptureMoves.append(move)
+                        if board[r + d[0] + d[0]][c + d[1] + d[1]] == '-':
+                            captured = (r + d[0], c + d[1])
+                            move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), board, isCaptureMove = True, capturedSquare=captured, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
+                                                                                                                                                        board[captured[0]][captured[1]]=='B'))
+                            if move not in gs.nextCaptureMoves:
+                                gs.nextCaptureMoves.append(move)
 
-    elif (board[r][c] == 'W' and gm.whitesTurn) or (board[r][c] == 'B' and not gm.whitesTurn):
+    elif (board[r][c] == 'W' and gs.whitesTurn) or (board[r][c] == 'B' and not gs.whitesTurn):
         for d in DIRECTIONS:
             for i in range(1, DIMENSION):
                 enemy_row = r + d[0] * i
@@ -321,12 +333,16 @@ def getMoreCaptures(board, r, c, gm):
                 if empty_row >= 0 and empty_row < DIMENSION and empty_col >= 0 and empty_col < DIMENSION:
                     if board[enemy_row][enemy_col] != '-' and board[empty_row][empty_col] != '-':
                         break
+
+                    elif board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W' \
+                        if gs.whitesTurn else board[enemy_row][enemy_col] == 'b' or board[enemy_row][enemy_col] == 'B':
+                            break
                     
                     elif board[enemy_row][enemy_col] == 'b' or board[enemy_row][enemy_col] == 'B' \
-                        if gm.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
+                        if gs.whitesTurn else board[enemy_row][enemy_col] == 'w' or board[enemy_row][enemy_col] == 'W':
                         if board[empty_row][empty_col] == '-':
                             captured = (enemy_row, enemy_col)
                             move = Move((r, c),(empty_row, empty_col), board, isCaptureMove = True, capturedSquare=captured, movedQueen=True, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
                                                                                                                                                               board[captured[0]][captured[1]]=='B'))
-                        if move not in gm.nextCaptureMoves:
-                            gm.nextCaptureMoves.append(move)
+                        if move not in gs.nextCaptureMoves:
+                            gs.nextCaptureMoves.append(move)

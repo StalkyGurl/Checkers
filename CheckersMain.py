@@ -34,7 +34,7 @@ def main():
     ValidMoves = game_state.moves
     firstCapture = True
     animate = False
-    whitePlayer = True # player plays as white
+    whitePlayer = False # player plays as white
     blackPlayer = False # player plays as black
     endgame = False
 
@@ -146,8 +146,9 @@ def main():
 
             # AI's turn
             elif not humanTurn and not endgame and not animate:
-                if not game_state.CapturePossible():
-                    AImove = AIrandomMove(game_state)
+                AIStartedCapturing = False
+                if not game_state.CapturePossible() and not AIStartedCapturing:
+                    AImove = AIMove(game_state)
                     game_state.makeMove(AImove)
                     animate = True
                     animateMove(AImove, screen, game_state, clock)
@@ -158,25 +159,25 @@ def main():
                     humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
                 # if there is any capture move possible
                 elif game_state.CapturePossible():
-                    AImove = AIrandomMove(game_state, capturePossible=True, firstCapture=True)
+                    AIStartedCapturing = True
+                    AImove = AIMove(game_state, capturePossible=True, firstCapture=True)
                     game_state.makeMove(AImove)
                     animate = True
                     captureSound.play()
                     animateMove(AImove, screen, game_state, clock)
                     pawnSound.play()
                     animate = False
-                    game_state.firstCaptureMoves = [] # reset moves after making a move
                     make_more_moves = moreCapturesAvalible(game_state.board, AImove.endRow, AImove.endCol, game_state)
-                    humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+                    game_state.firstCaptureMoves = []
                     if not make_more_moves: # if there are no more captures for moved pawn
                         game_state.whitesTurn = not game_state.whitesTurn
                         game_state.nextCaptureMoves = [] # reset moves after making a move
                         game_state.moveLog[-1].lastCapture = True # set the flag of the last capture move
                         firstCapture = True
                         humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
-                    else: # if there are more captures
+                    elif make_more_moves:
                         getMoreCaptures(game_state.board, AImove.endRow, AImove.endCol, game_state)
-                        AImove = AIrandomMove(game_state, capturePossible=True, firstCapture=False)
+                        AImove = AIMove(game_state, capturePossible=True, firstCapture=False)
                         game_state.makeMove(AImove)
                         animate = True
                         captureSound.play()
@@ -197,6 +198,7 @@ def main():
                     game_state.restartGame()
                     sq_selected = ()
                     playerClicks = []
+                    endgame = False
    
         updateBoard(screen, game_state, FPS, clock, ValidMoves, sq_selected)
 
