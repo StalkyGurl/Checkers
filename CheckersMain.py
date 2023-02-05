@@ -34,15 +34,15 @@ def main_menu():
     while running:
         screen.blit(bg, (0, 0))
         MENU_MOUSE_POS = p.mouse.get_pos()
-        MENU_TEXT = get_font(50).render("CHECKERS", True, "#760E73")
-        MENU_RECT = MENU_TEXT.get_rect(center=(WIDTH//2, 60))
+        MENU_TEXT = get_font(65).render("CHECKERS", True, "#760E73")
+        MENU_RECT = MENU_TEXT.get_rect(center=(WIDTH//2, 65))
 
         PVP_BUTTON = Button(image=p.image.load("images/player-vs-player.png"), pos=(WIDTH//2, 170), 
-                            text_input="PLAYER VS PLAYER", font=get_font(20), base_color="pink", hovering_color="White")
+                            text_input="PLAYER VS PLAYER", font=get_font(25), base_color="pink", hovering_color="White")
         PVE_BUTTON = Button(image=p.image.load("images/player_vs_AI.png"), pos=(WIDTH//2, 290), 
-                            text_input="PLAY VS AI AS WHITE", font=get_font(17), base_color="pink", hovering_color="White")
+                            text_input="PLAY VS AI AS WHITE", font=get_font(25), base_color="pink", hovering_color="White")
         EVP_BUTTON = Button(image=p.image.load("images/AI_vs_player.png"), pos=(WIDTH//2, 410), 
-                            text_input="PLAY VS AI AS BLACK", font=get_font(17), base_color="pink", hovering_color="White")
+                            text_input="PLAY VS AI AS BLACK", font=get_font(25), base_color="pink", hovering_color="White")
         QUIT_BUTTON = Button(image=p.image.load("images/quit.png"), pos=(WIDTH//2, 530), 
                             text_input="QUIT", font=get_font(30), base_color="pink", hovering_color="White")
 
@@ -74,7 +74,6 @@ def main_menu():
                     running = False
 
         p.display.update()
-
 
 
 
