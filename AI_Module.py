@@ -106,7 +106,6 @@ def findBestMove(gs, ValidMoves):
         if score > maxScore:
             maxScore = score
             bestMove = move
-            print(maxScore)
     gs.moves = []
     return bestMove
         

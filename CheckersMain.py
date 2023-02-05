@@ -8,19 +8,80 @@ from CheckersEngine import *
 from AI_Module import *
 from board import *
 from pawns import *
+from buttons import *
 
 FPS = 60
+
+PLAYER_ONE = True # player plays as white
+PLAYER_TWO = True # player plays as black
+p.init()
+p.mixer.init()
+p.display.set_caption('Checkers')
+screen = p.display.set_mode((WIDTH,HEIGHT))
+clock = p.time.Clock()
+screen.fill(p.Color(BG_COLOR))
+p.mixer.music.load("sounds/bg_music.mp3")
+p.mixer.music.play(-1, 0.0)
+p.mixer.music.set_volume(0.05)
+
+'''
+Main menu screen.
+'''
+def main_menu():
+    global PLAYER_ONE, PLAYER_TWO
+    bg = p.image.load("images/bg.png")
+    running = True
+    while running:
+        screen.blit(bg, (0, 0))
+        MENU_MOUSE_POS = p.mouse.get_pos()
+        MENU_TEXT = get_font(50).render("CHECKERS", True, "#760E73")
+        MENU_RECT = MENU_TEXT.get_rect(center=(WIDTH//2, 60))
+
+        PVP_BUTTON = Button(image=p.image.load("images/player-vs-player.png"), pos=(WIDTH//2, 170), 
+                            text_input="PLAYER VS PLAYER", font=get_font(20), base_color="pink", hovering_color="White")
+        PVE_BUTTON = Button(image=p.image.load("images/player_vs_AI.png"), pos=(WIDTH//2, 290), 
+                            text_input="PLAY VS AI AS WHITE", font=get_font(17), base_color="pink", hovering_color="White")
+        EVP_BUTTON = Button(image=p.image.load("images/AI_vs_player.png"), pos=(WIDTH//2, 410), 
+                            text_input="PLAY VS AI AS BLACK", font=get_font(17), base_color="pink", hovering_color="White")
+        QUIT_BUTTON = Button(image=p.image.load("images/quit.png"), pos=(WIDTH//2, 530), 
+                            text_input="QUIT", font=get_font(30), base_color="pink", hovering_color="White")
+
+        screen.blit(MENU_TEXT, MENU_RECT)
+
+        for button in [PVP_BUTTON, PVE_BUTTON, EVP_BUTTON, QUIT_BUTTON]:
+            button.changeColor(MENU_MOUSE_POS)
+            button.update(screen)
+        
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                p.quit()
+                running = False
+            if event.type == p.MOUSEBUTTONDOWN:
+                if PVP_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    PLAYER_ONE = True
+                    PLAYER_TWO = True 
+                    play()
+                if PVE_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    PLAYER_ONE = True
+                    PLAYER_TWO = False 
+                    play()
+                if EVP_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    PLAYER_ONE = False
+                    PLAYER_TWO = True
+                    play()
+                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    p.quit()
+                    running = False
+
+        p.display.update()
+
+
 
 
 '''
 The main driver of the code for user input and updating the graphics.
 '''
-def main():
-    p.init()
-    p.mixer.init()
-    p.display.set_caption('Checkers')
-    screen = p.display.set_mode((WIDTH,HEIGHT))
-    clock = p.time.Clock()
+def play():
     screen.fill(p.Color(BG_COLOR))
     pawnSound = p.mixer.Sound(os.path.join('sounds', 'pawn.ogg'))
     captureSound = p.mixer.Sound(os.path.join('sounds', 'pick.ogg'))
@@ -34,13 +95,11 @@ def main():
     ValidMoves = game_state.moves
     firstCapture = True
     animate = False
-    whitePlayer = True # player plays as white
-    blackPlayer = False # player plays as black
     endgame = False
 
     while running: 
 
-        humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+        humanTurn = (game_state.whitesTurn and PLAYER_ONE) or (not game_state.whitesTurn and PLAYER_TWO)
 
         if game_state.CapturePossible() and firstCapture:
             game_state.getFirstCaptureMoves() # generate all valid capture moves
@@ -158,7 +217,7 @@ def main():
                     animate = False
                     game_state.moves = [] # reset moves after making a move
                     game_state.whitesTurn = not game_state.whitesTurn
-                    humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+                    humanTurn = (game_state.whitesTurn and PLAYER_ONE) or (not game_state.whitesTurn and PLAYER_TWO)
                 # if there is any capture move possible
                 elif game_state.CapturePossible():
                     AIStartedCapturing = True
@@ -177,7 +236,7 @@ def main():
                         game_state.moves = [] # reset moves after making a move
                         game_state.moveLog[-1].lastCapture = True # set the flag of the last capture move
                         firstCapture = True
-                        humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+                        humanTurn = (game_state.whitesTurn and PLAYER_ONE) or (not game_state.whitesTurn and PLAYER_TWO)
                     elif make_more_moves:
                         game_state.moves = []
                         getMoreCaptures(game_state.board, AImove.endRow, AImove.endCol, game_state)
@@ -190,18 +249,18 @@ def main():
                         animate = False
                         make_more_moves = moreCapturesAvalible(game_state.board, AImove.endRow, AImove.endCol, game_state)
                         game_state.moves = []
-                        humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer) 
+                        humanTurn = (game_state.whitesTurn and PLAYER_ONE) or (not game_state.whitesTurn and PLAYER_TWO) 
                         if not make_more_moves:
                             game_state.whitesTurn = not game_state.whitesTurn
                             game_state.moves = [] # reset moves after making a move
                             game_state.moveLog[-1].lastCapture = True # set the flag of the last capture move
                             firstCapture = True
-                            humanTurn = (game_state.whitesTurn and whitePlayer) or (not game_state.whitesTurn and blackPlayer)
+                            humanTurn = (game_state.whitesTurn and PLAYER_ONE) or (not game_state.whitesTurn and PLAYER_TWO)
 
 
             # key clicks
             elif e.type == p.KEYDOWN:
-                if e.key == p.K_z: # undo button
+                if e.key == p.K_z and PLAYER_ONE and PLAYER_TWO: # undo button
                     game_state.undoMove()
                     sq_selected = ()
                     playerClicks = []
@@ -215,4 +274,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main_menu()
