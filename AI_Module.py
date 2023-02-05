@@ -60,7 +60,18 @@ def evaluatePosition(gs):
     DIRECTIONS = [(1,1),(-1,-1),(1,-1),(-1,1)]
     for r in range(len(gs.board)):
         for c in range(len(gs.board[r])):
-            if gs.board[r][c] == 'w' or gs.board[r][c] == 'W':
+            if gs.board[r][c] == 'w' or gs.board[r][c] == 'W' and gs.whitesTurn:
+                for d in DIRECTIONS:
+                    nr = r + d[0]
+                    nc = c + d[1]
+                    if 0 <= nr < DIMENSION and 0 <= nc < DIMENSION:
+                        if gs.board[nr][nc] == 'b' or gs.board[nr][nc] == 'B':
+                            score -= 6
+                        elif gs.board[nr][nc] == 'w' or gs.board[nr][nc] == 'W':
+                            score += 2
+                        elif gs.board[nr][nc] == '-':
+                            score -= 4  
+            elif gs.board[r][c] == 'b' or gs.board[r][c] == 'B' and not gs.whitesTurn:
                 for d in DIRECTIONS:
                     nr = r + d[0]
                     nc = c + d[1]
@@ -68,26 +79,15 @@ def evaluatePosition(gs):
                         if gs.board[nr][nc] == 'b' or gs.board[nr][nc] == 'B':
                             score -= 2
                         elif gs.board[nr][nc] == 'w' or gs.board[nr][nc] == 'W':
-                            score += 1
+                            score += 6
                         elif gs.board[nr][nc] == '-':
-                            score -= 1  
-            elif gs.board[r][c] == 'b' or gs.board[r][c] == 'B':
-                for d in DIRECTIONS:
-                    nr = r + d[0]
-                    nc = c + d[1]
-                    if 0 <= nr < DIMENSION and 0 <= nc < DIMENSION:
-                        if gs.board[nr][nc] == 'b' or gs.board[nr][nc] == 'B':
-                            score += 2
-                        elif gs.board[nr][nc] == 'w' or gs.board[nr][nc] == 'W':
-                            score -= 1
-                        elif gs.board[nr][nc] == '-':
-                            score += 1 
+                            score += 4 
     return score
 
 
 # scores the board overall
 def scoreGameState(gs):
-    return evaluateMaterial(gs) + evaluatePosition(gs) * 0.01
+    return evaluateMaterial(gs) + evaluatePosition(gs)
 
 
 '''
@@ -96,26 +96,17 @@ Function that finds the best move for the AI
 def findBestMove(gs, ValidMoves):
     shuffle(ValidMoves)
     turn = 1 if gs.whitesTurn else -1
-    minScore = 1000
-    bestMove = None
+    bestMove = ValidMoves[0]
+    maxScore = -10000
     for move in ValidMoves:
         gs.makeMove(move)
+        score = turn * scoreGameState(gs) + random() * 0.1
         gs.whitesTurn = not gs.whitesTurn
-        gs.moves = []
-        gs.getValidMoves()
-        OpponentsMoves = gs.moves
-        opponentsMaxScore = -1000
-        if len(OpponentsMoves) == 0:
-            return move
-        for opponentsMove in OpponentsMoves:
-            gs.makeMove(opponentsMove)
-            gs.whitesTurn = not gs.whitesTurn
-            score = -turn * scoreGameState(gs) - random() * 0.1
-            if score > opponentsMaxScore:
-                opponentsMaxScore = score
-            gs.undoMove()
         gs.undoMove()
-        if minScore > opponentsMaxScore:
-            minScore = opponentsMaxScore
+        if score > maxScore:
+            maxScore = score
             bestMove = move
-    return bestMove 
+            print(maxScore)
+    gs.moves = []
+    return bestMove
+        
