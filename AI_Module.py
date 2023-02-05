@@ -9,6 +9,7 @@ from board import *
 
 DEPTH = 2
 
+
 '''
 This function chooses a random valid move for the AI.
 '''
@@ -26,10 +27,10 @@ def AIMove(gs, capturePossible=False, firstCapture=False):
             return AImove
     elif capturePossible and firstCapture:
         gs.getFirstCaptureMoves()
-        ValidMoves = gs.firstCaptureMoves
+        ValidMoves = gs.moves
         return ValidMoves[randint(0, len(ValidMoves)-1)]
     elif capturePossible and not firstCapture:
-        ValidMoves = gs.nextCaptureMoves
+        ValidMoves = gs.moves
         return ValidMoves[randint(0, len(ValidMoves)-1)]
 
 
@@ -117,5 +118,4 @@ def findBestMove(gs, ValidMoves):
         if minScore > opponentsMaxScore:
             minScore = opponentsMaxScore
             bestMove = move
-    print(minScore)
     return bestMove 

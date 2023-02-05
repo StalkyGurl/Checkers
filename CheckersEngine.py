@@ -18,10 +18,8 @@ class GameState():
             ['w', '-', 'w', '-', 'w', '-', 'w', '-']
         ]
         self.whitesTurn = True 
-        self.moves = [] # all non-capture valid moves
+        self.moves = [] # all valid moves
         self.moveLog = []
-        self.firstCaptureMoves = [] # all capture valid moves
-        self.nextCaptureMoves = [] # the list of next captures for a moved pawn
         self.whiteWon = False
         self.blackWon = False
 
@@ -30,18 +28,21 @@ class GameState():
     Function responsible for making a move.
     '''
     def makeMove(self, move):
-        self.board[move.startRow][move.startCol] = '-'
-        if move.endRow == 0 and move.pawnMoved == 'w':
-            self.board[move.endRow][move.endCol] = 'W'
-            move.isUpdateMove = True
-        elif move.endRow == 7 and move.pawnMoved == 'b':
-            self.board[move.endRow][move.endCol] = 'B'
-            move.isUpdateMove = True
-        else:
-            self.board[move.endRow][move.endCol] = move.pawnMoved
-        if move.isCaptureMove:
-            self.board[move.capturedSquare[0]][move.capturedSquare[1]] = '-'
-        self.moveLog.append(move)
+        try:
+            self.board[move.startRow][move.startCol] = '-'
+            if move.endRow == 0 and move.pawnMoved == 'w':
+                self.board[move.endRow][move.endCol] = 'W'
+                move.isUpdateMove = True
+            elif move.endRow == 7 and move.pawnMoved == 'b':
+                self.board[move.endRow][move.endCol] = 'B'
+                move.isUpdateMove = True
+            else:
+                self.board[move.endRow][move.endCol] = move.pawnMoved
+            if move.isCaptureMove:
+                self.board[move.capturedSquare[0]][move.capturedSquare[1]] = '-'
+            self.moveLog.append(move)
+        except AttributeError:
+            pass
 
     
     '''
@@ -84,8 +85,6 @@ class GameState():
         self.whitesTurn = True # it's whites turn
         self.moves = [] # clear moves
         self.moveLog = [] # clear moveLog
-        self.firstCaptureMoves = [] 
-        self.nextCaptureMoves = []
         self.whiteWon = False
         self.blackWon = False
 
@@ -207,8 +206,8 @@ class GameState():
                                         move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), self.board, isCaptureMove = True,
                                                     capturedSquare=captured, capturedQueen=(self.board[captured[0]][captured[1]]== 'W' or \
                                                          self.board[captured[0]][captured[1]]=='B'))
-                                        if move not in self.firstCaptureMoves:
-                                            self.firstCaptureMoves.append(move)
+                                        if move not in self.moves:
+                                            self.moves.append(move)
 
                     elif (self.board[r][c] == 'W' and self.whitesTurn) or (self.board[r][c] == 'B' and not self.whitesTurn):
                         for d in DIRECTIONS:
@@ -234,8 +233,8 @@ class GameState():
                                             move = Move((r, c),(empty_row, empty_col), self.board, isCaptureMove = True,
                                                     capturedSquare=captured, movedQueen=True, capturedQueen=(self.board[captured[0]][captured[1]]== 'W' or \
                                                                                                               self.board[captured[0]][captured[1]]=='B'))
-                                            if move not in self.firstCaptureMoves:
-                                                self.firstCaptureMoves.append(move)
+                                            if move not in self.moves:
+                                                self.moves.append(move)
                                             break       
 
 
@@ -320,8 +319,8 @@ def getMoreCaptures(board, r, c, gs):
                             captured = (r + d[0], c + d[1])
                             move = Move((r, c),(r + d[0] + d[0], c + d[1] + d[1]), board, isCaptureMove = True, capturedSquare=captured, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
                                                                                                                                                         board[captured[0]][captured[1]]=='B'))
-                            if move not in gs.nextCaptureMoves:
-                                gs.nextCaptureMoves.append(move)
+                            if move not in gs.moves:
+                                gs.moves.append(move)
 
     elif (board[r][c] == 'W' and gs.whitesTurn) or (board[r][c] == 'B' and not gs.whitesTurn):
         for d in DIRECTIONS:
@@ -344,5 +343,5 @@ def getMoreCaptures(board, r, c, gs):
                             captured = (enemy_row, enemy_col)
                             move = Move((r, c),(empty_row, empty_col), board, isCaptureMove = True, capturedSquare=captured, movedQueen=True, capturedQueen=(board[captured[0]][captured[1]]== 'W' or \
                                                                                                                                                               board[captured[0]][captured[1]]=='B'))
-                        if move not in gs.nextCaptureMoves:
-                            gs.nextCaptureMoves.append(move)
+                        if move not in gs.moves:
+                            gs.moves.append(move)
